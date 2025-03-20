@@ -26,8 +26,9 @@ class GameDecisionTree:
         if(event_number not in self.nodes):
             self.nodes[event_number] = StoryNode(event_number, description, left_event, right_event)
         # TODO: Assign left and right children based on left_event and right_event
-        self.left = self.nodes[left_event]
-        self.right = self.nodes[right_event]
+        self.nodes[event_number].left = self.nodes.get(left_event)  #safely checks left and right event nodes in "nodes"
+        self.nodes[event_number].right = self.nodes.get(right_event)
+
         # TODO: Set root if it's the first node inserted
         if(self.root is None):
             self.root = self.nodes[event_number]
@@ -38,12 +39,20 @@ class GameDecisionTree:
         # TODO: Start from the root node
         node = self.root
         # TODO: Loop through player choices, navigating left or right based on input
-        while(node.left is not None or node.right is not None):
-            print(f"Current event: {node.description}")
-
-
         # TODO: Print event descriptions and ask for player decisions
         # TODO: End game when reaching a leaf node (where left and right are None)
+        
+        while node.left is not None or node.right is not None:
+            print(f"Current event: {node.description}")
+            choice = input("Enter 1 or 2 to make a choice:")
+            if choice == "1" and node.left:
+                node = node.left
+            elif choice == "2" and node.right:
+                node = node.right
+            else:
+                print("Invalid choice. Enter 1 or 2")
+
+        print(f"Game over. Final event: {node.description}")
 
 def load_story(filename, game_tree):
     """Load story from a file and construct the decision tree."""
@@ -51,6 +60,19 @@ def load_story(filename, game_tree):
     # TODO: Open the file and read line by line
     # TODO: Split each line into event_number, description, left_event, right_event
     # TODO: Call game_tree.insert() for each event to build the tree
+    try: 
+        with open(filename, "r") as file:
+            for line in file:
+                parts = [part.strip() for part in line.split("|")]
+
+                event_number = int(parts[0])
+                description = parts[1]
+                left_event = int(parts[2]) if parts[2].lower() != 'none' else None
+                right_event = int(parts[3]) if parts[3].lower() != 'none' else None
+                game_tree.insert(event_number, description, left_event, right_event)
+    except FileNotFoundError:
+        print(f"File '{filename}' not found.")
+
 
 # Main program
 if __name__ == "__main__":
