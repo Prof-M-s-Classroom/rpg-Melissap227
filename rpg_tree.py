@@ -60,19 +60,39 @@ def load_story(filename, game_tree):
     # TODO: Open the file and read line by line
     # TODO: Split each line into event_number, description, left_event, right_event
     # TODO: Call game_tree.insert() for each event to build the tree
-    try: 
+    try:
         with open(filename, "r") as file:
-            for line in file:
+            for line_number, line in enumerate(file, start=1):
+                # Skip empty lines or lines that only contain whitespace
+                if not line.strip():
+                    print(f"Skipping empty line at {line_number}")
+                    continue
+
+                # Split the line and validate the format
                 parts = [part.strip() for part in line.split("|")]
+                if len(parts) < 4:
+                    print(f"Malformed line at {line_number}: {line.strip()}")
+                    continue  # Skip this line
 
-                event_number = int(parts[0])
-                description = parts[1]
-                left_event = int(parts[2]) if parts[2].lower() != 'none' else None
-                right_event = int(parts[3]) if parts[3].lower() != 'none' else None
-                game_tree.insert(event_number, description, left_event, right_event)
+                try:
+                    # Safely parse the event details
+                    event_number = int(parts[0])
+                    description = parts[1]
+                    left_event = int(parts[2]) if parts[2].lower() != 'none' else None
+                    right_event = int(parts[3]) if parts[3].lower() != 'none' else None
+
+                    # Insert into the game tree
+                    game_tree.insert(event_number, description, left_event, right_event)
+
+                except ValueError as e:
+                    # Handle invalid integers or other format errors
+                    print(f"ValueError at line {line_number}: {e}. Skipping line.")
+                    continue
+
     except FileNotFoundError:
-        print(f"File '{filename}' not found.")
-
+        print(f"Error: File '{filename}' not found.")
+    except Exception as e:
+        print(f"Unexpected error occurred while reading the file: {e}")
 
 # Main program
 if __name__ == "__main__":
